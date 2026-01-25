@@ -38,6 +38,7 @@ public class NStatusTask {
         log.info("N Created at {}", dateFormat.format(System.currentTimeMillis()));
     }
 
+    /*
     @Scheduled(fixedRate = 1000)
     public void processInitiatedNs() {
         this.nRepository.findByStatusAndImageUrlIsNull("initiated").stream().forEach((entity) -> {
@@ -64,4 +65,6 @@ public class NStatusTask {
             });
         });
     }
+
+     */
 }
