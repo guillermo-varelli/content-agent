@@ -8,7 +8,7 @@ import com.n.in.model.repository.AgentRepository;
 import com.n.in.provider.groq.client.GroqClient;
 import com.n.in.provider.groq.model.reponse.Message;
 import com.n.in.provider.groq.model.request.GroqRequest;
-import com.n.in.strategy.IAClientStrategy;
+import com.n.in.service.IAClientStrategy;
 import com.n.in.utils.enums.ProviderEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

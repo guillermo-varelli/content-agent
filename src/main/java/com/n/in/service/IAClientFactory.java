@@ -1,4 +1,4 @@
-package com.n.in.strategy;
+package com.n.in.service;
 
 import com.n.in.model.Agent;
 import com.n.in.provider.gemini.GeminiService;

@@ -7,7 +7,7 @@ import com.n.in.provider.gemini.model.request.Content;
 import com.n.in.provider.gemini.model.request.GeminiRequest;
 import com.n.in.provider.gemini.model.request.Part;
 import com.n.in.provider.gemini.model.response.GeminiResponse;
-import com.n.in.strategy.IAClientStrategy;
+import com.n.in.service.IAClientStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
