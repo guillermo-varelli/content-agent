@@ -1,6 +1,7 @@
 package com.n.in.scheduler;
 
 import com.n.in.model.repository.NRepository;
+import com.n.in.scrape.infobae.InfobaeTecnoService;
 import com.n.in.service.WorkflowExecutionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,13 +20,25 @@ public class ContentStatusTask {
     WorkflowExecutionService workflowExecutionService;
 
     @Autowired
+    InfobaeTecnoService infobaeTecnoService;
+
+    @Autowired
     NRepository nRepository;
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    @Scheduled(fixedRate = 1000)
+   // @Scheduled(fixedRate = 1000)
     public void createNs() throws Exception {
-        workflowExecutionService.executeWorkflow(1L);
+        workflowExecutionService.executeWorkflow(1L,null);
+        log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
+    }
+
+    @Scheduled(fixedRate = 1000)
+    public void createContentScrapedInfobaeTech() throws Exception {
+        infobaeTecnoService.scrapeTecno().forEach(item ->
+                        workflowExecutionService.executeWorkflow(5L, item)
+        );
+
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
     }
 

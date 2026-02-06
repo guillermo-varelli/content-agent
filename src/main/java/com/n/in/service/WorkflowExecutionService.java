@@ -8,6 +8,7 @@ import com.n.in.model.Workflow;
 import com.n.in.model.repository.ExecutionRepository;
 import com.n.in.model.repository.StepExecutionRepository;
 import com.n.in.model.repository.WorkflowRepository;
+import com.n.in.scrape.infobae.InfobaeTecnoService;
 import com.n.in.utils.enums.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.List;
+
+import static java.util.Objects.nonNull;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +32,10 @@ public class WorkflowExecutionService {
 
     private final InternalOperationService internalOperationService;
 
+    private final InfobaeTecnoService infobaeScraperService;
+
     @Transactional
-    public Execution executeWorkflow(Long workflowId) {
+    public Execution executeWorkflow(Long workflowId,String initialData) {
 
         Workflow workflow = workflowRepository.findById(workflowId)
                 .orElseThrow(() -> new RuntimeException("Workflow no encontrado"));
@@ -52,7 +58,9 @@ public class WorkflowExecutionService {
             stepExec.setCreatedAt(LocalDateTime.now());
             stepExec.setUpdatedAt(LocalDateTime.now());
             stepExec = stepExecutionRepository.save(stepExec);
-
+            if (nonNull(initialData)){
+                previousOutput = initialData;
+            }
             try {
                 String output = runStep(stepExec.getExecution().getId(),step, previousOutput);
                 stepExec.setOutput(output);
@@ -87,7 +95,7 @@ public class WorkflowExecutionService {
       return null;
     }
 
-    private String runStep(Long execution, Step step, String previousOutput) throws JsonProcessingException {
+    private String runStep(Long execution, Step step, String previousOutput) throws Exception {
 
         String finalPrompt = step.getPrompt();
 
@@ -98,6 +106,7 @@ public class WorkflowExecutionService {
         if ("internal".equalsIgnoreCase(step.getOperationType())) {
             return internalOperationService.handleInternal(execution, step, previousOutput).toString();
         }
+
 
         if (step.getAgent() == null) {
             throw new IllegalArgumentException("El step requiere un agent para operación: " + step.getOperationType());
