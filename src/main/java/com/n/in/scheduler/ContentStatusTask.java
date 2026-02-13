@@ -28,15 +28,15 @@ public class ContentStatusTask {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Scheduled(fixedRate = 1000)
-    public void createNs() throws Exception {
-        workflowExecutionService.executeWorkflow(1L,null);
+    public void createContentWithAIHumanHacks() throws Exception {
+        workflowExecutionService.executeWorkflow(1L, null);
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
     }
 
-   // @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 60 * 60 * 1000)
     public void createContentScrapedInfobaeTech() throws Exception {
         infobaeTecnoService.scrapeTecno().forEach(item ->
-                        workflowExecutionService.executeWorkflow(5L, item)
+                workflowExecutionService.executeWorkflow(5L, item)
         );
 
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));

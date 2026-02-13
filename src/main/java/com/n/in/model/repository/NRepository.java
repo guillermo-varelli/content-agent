@@ -1,15 +1,15 @@
 package com.n.in.model.repository;
 
 
-import com.n.in.model.NEntity;
+import com.n.in.model.Content;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface NRepository extends JpaRepository<NEntity, Long> {
+public interface NRepository extends JpaRepository<Content, Long> {
     // Devuelve todos con status = 'initiated' y imageUrl = NULL
-    List<NEntity> findByStatusAndImageUrlIsNull(String status);
+    List<Content> findByStatusAndImageUrlIsNull(String status);
 }
 

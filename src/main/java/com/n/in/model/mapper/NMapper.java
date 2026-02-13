@@ -2,13 +2,13 @@ package com.n.in.model.mapper;
 
 
 import com.n.in.model.dto.NDto;
-import com.n.in.model.NEntity;
+import com.n.in.model.Content;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NMapper {
 
-    public NDto toDto(NEntity e) {
+    public NDto toDto(Content e) {
         if (e == null) return null;
         return NDto.builder()
                 .id(e.getId())
@@ -26,9 +26,9 @@ public class NMapper {
                 .build();
     }
 
-    public NEntity toEntity(NDto d) {
+    public Content toEntity(NDto d) {
         if (d == null) return null;
-        return NEntity.builder()
+        return Content.builder()
                 .id(d.getId())
                 .executionId(d.getExecutionId())
                 .status(d.getStatus())

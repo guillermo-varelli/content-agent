@@ -1,15 +1,15 @@
 package com.n.in.model.repository;
 
 
-import com.n.in.model.NEntity;
+import com.n.in.model.Content;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface NBackOfficeRepository extends JpaRepository<NEntity, Long> {
+public interface NBackOfficeRepository extends JpaRepository<Content, Long> {
 
-    List<NEntity> findByStatusInOrderByCreatedDesc(List<String> statuses);
+    List<Content> findByStatusInOrderByCreatedDesc(List<String> statuses);
 }
 
