@@ -33,7 +33,7 @@ public class ContentStatusTask {
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
     }
 
-    @Scheduled(fixedRate = 60 * 60 * 1000)
+    @Scheduled(fixedRate = 10000)
     public void createContentScrapedInfobaeTech() throws Exception {
         infobaeTecnoService.scrapeTecno().forEach(item ->
                 workflowExecutionService.executeWorkflow(5L, item)

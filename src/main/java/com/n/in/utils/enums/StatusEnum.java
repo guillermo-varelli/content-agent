@@ -11,7 +11,9 @@ public enum StatusEnum {
     DONE(2, "DONE"),
     REJECTED(3, "REJECTED"),
 
-    ERROR(4, "ERROR");
+    ERROR(4, "ERROR"),
+    MANUAL_REVIEW(3, "MANUAL REVIEW");
+
 
     private final int id;
     private final String description;

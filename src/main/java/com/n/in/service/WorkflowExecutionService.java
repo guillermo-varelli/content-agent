@@ -45,8 +45,6 @@ public class WorkflowExecutionService {
         execution.setStatus("RUNNING");
         execution = executionRepository.save(execution);
 
-        String previousOutput = null;
-
         for (Step step : workflow.getSteps().stream()
                 .sorted(Comparator.comparing(Step::getOrderIndex))
                 .toList()) {
@@ -63,13 +61,13 @@ public class WorkflowExecutionService {
                 String updatedOutput = runStep(stepExec.getExecution().getId(),step, output);
                 stepExec.setOutput(updatedOutput);
                 output = updatedOutput;
+                stepExec.setCreatedAt(LocalDateTime.now());
 
                 if(stepExec.getStatus().equalsIgnoreCase(StatusEnum.ERROR.getDescription())){
                     execution.setStatus(StatusEnum.ERROR.getDescription());
                     stepExec.setUpdatedAt(LocalDateTime.now());
                     executionRepository.save(execution);
                     return null;
-
                 }else{
                     stepExec.setStatus(StatusEnum.DONE.getDescription());
                     stepExecutionRepository.save(stepExec);
@@ -80,10 +78,9 @@ public class WorkflowExecutionService {
                 }
 
             } catch (Exception e) {
-
                 stepExec.setOutput("ERROR: " + e.getMessage());
                 stepExec.setStatus("ERROR");
-                execution.setStatus(StatusEnum.ERROR.getDescription());
+                execution.setStatus(StatusEnum.MANUAL_REVIEW.getDescription());
                 stepExec.setUpdatedAt(LocalDateTime.now());
                 executionRepository.save(execution);
                 return null;
