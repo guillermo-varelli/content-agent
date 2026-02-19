@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface NRepository extends JpaRepository<Content, Long> {
+public interface ContentRepository extends JpaRepository<Content, Long> {
     // Devuelve todos con status = 'initiated' y imageUrl = NULL
     List<Content> findByStatusAndImageUrlIsNull(String status);
 }

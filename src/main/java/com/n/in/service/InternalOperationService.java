@@ -3,7 +3,7 @@ package com.n.in.service;
 import com.n.in.model.Step;
 import com.n.in.model.dto.NDto;
 import com.n.in.model.mapper.NMapper;
-import com.n.in.model.repository.NRepository;
+import com.n.in.model.repository.ContentRepository;
 import com.n.in.utils.NParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.util.Map;
 @Component
 public class InternalOperationService {
     @Autowired
-    private  NRepository nRepository;
+    private ContentRepository contentRepository;
 
     @Autowired
     private NMapper nMapper;
@@ -27,7 +27,7 @@ public class InternalOperationService {
         nDto.setCreated(LocalDateTime.now());
         nDto.setLastUpdated(LocalDateTime.now());
         nDto.setCategory(step.getWorkflows().getCategory());
-        nRepository.save(nMapper.toEntity(nDto));
+        contentRepository.save(nMapper.toEntity(nDto));
 
         return Map.of(
                 "step_prompt", step.getPrompt(),

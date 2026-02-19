@@ -1,6 +1,6 @@
 package com.n.in.scheduler;
 
-import com.n.in.model.repository.NRepository;
+import com.n.in.model.repository.ContentRepository;
 import com.n.in.scrape.infobae.InfobaeTecnoService;
 import com.n.in.service.WorkflowExecutionService;
 import org.slf4j.Logger;
@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
+import java.util.Set;
 
 @Component
 public class ContentStatusTask {
@@ -23,24 +24,28 @@ public class ContentStatusTask {
     InfobaeTecnoService infobaeTecnoService;
 
     @Autowired
-    NRepository nRepository;
+    ContentRepository contentRepository;
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
+    private static final Set<Long> WORKFLOW_IDS = Set.of(6L);
+
     @Scheduled(fixedRate = 1000)
     public void createContentWithAIHumanHacks() throws Exception {
-        workflowExecutionService.executeWorkflow(1L, null);
+        for (Long workflowId : WORKFLOW_IDS) {
+            workflowExecutionService.executeWorkflow(workflowId, null);
+        }
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
     }
 
-    @Scheduled(fixedRate = 10000)
+  /*  @Scheduled(fixedRate = 10000)
     public void createContentScrapedInfobaeTech() throws Exception {
         infobaeTecnoService.scrapeTecno().forEach(item ->
                 workflowExecutionService.executeWorkflow(5L, item)
         );
 
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
-    }
+    }*/
 
     /*
     @Scheduled(fixedRate = 1000)
