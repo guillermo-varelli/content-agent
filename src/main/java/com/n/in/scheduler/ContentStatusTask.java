@@ -34,10 +34,13 @@ public class ContentStatusTask {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-   @Scheduled(fixedRate = 1000)
+   @Scheduled(fixedDelay = 1000)
     public void createContentWithAIHumanHacks() throws Exception {
         List<Integer> ENABLED_WORKFLOW = workflowRepository.findIdsByEnabledTrue();
         for (Integer workflowId : ENABLED_WORKFLOW) {
+            if (ENABLED_WORKFLOW.equals(5)){
+                break;
+            }
             workflowExecutionService.executeWorkflow(workflowId, null);
         }
         log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));

@@ -26,6 +26,7 @@ public class ContentDto {
 
     private String imagePrompt;
     private String imageUrl;
+    private String slug;
     private LocalDateTime created;
     private LocalDateTime lastUpdated;
 

@@ -49,6 +49,9 @@ public class Content {
 
     private String imageUrl;
 
+    @Column(length = 255)
+    private String slug;
+
     private LocalDateTime created;
     private LocalDateTime lastUpdated;
 }

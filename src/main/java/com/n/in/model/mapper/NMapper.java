@@ -20,6 +20,7 @@ public class NMapper {
                 .subCategory(e.getSubCategory())
                 .imageUrl(e.getImageUrl())
                 .imagePrompt(e.getImagePrompt())
+                .slug(e.getSlug())
                 .created(e.getCreated())
                 .lastUpdated(e.getLastUpdated())
                 .build();
@@ -39,6 +40,7 @@ public class NMapper {
                 .subCategory(d.getSubCategory())
                 .imagePrompt(d.getImagePrompt())
                 .imageUrl(d.getImageUrl())
+                .slug(d.getSlug())
                 .created(d.getCreated())
                 .lastUpdated(d.getLastUpdated())
                 .build();
