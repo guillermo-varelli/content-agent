@@ -1,12 +1,10 @@
-CREATE TABLE `n` (
+CREATE TABLE `content` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `execution_id` bigint NOT NULL,
   `title` varchar(250) DEFAULT NULL,
   `short_description` text,
   `message` text,
   `status` varchar(20) DEFAULT NULL,
-  `type` varchar(20) DEFAULT NULL,
-  `sub_type` varchar(20) DEFAULT NULL,
   `category` varchar(20) DEFAULT NULL,
   `sub_category` varchar(20) DEFAULT NULL,
   `image_url` text,
