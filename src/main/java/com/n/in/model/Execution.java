@@ -29,10 +29,10 @@ public class Execution {
     @OneToMany(mappedBy = "execution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<StepExecution> stepExecutions;
 
-    @JoinColumn(name = "created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @JoinColumn(name = "updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
 }

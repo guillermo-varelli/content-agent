@@ -1,50 +1,46 @@
 package com.n.in.provider.groq;
 
-
-import com.n.in.model.Agent;
-import com.n.in.model.dto.ContentDto;
 import com.n.in.model.Step;
-import com.n.in.model.repository.AgentRepository;
 import com.n.in.provider.groq.client.GroqClient;
+import com.n.in.provider.groq.model.reponse.GroqResponse;
 import com.n.in.provider.groq.model.reponse.Message;
 import com.n.in.provider.groq.model.request.GroqRequest;
 import com.n.in.service.IAClientStrategy;
-import com.n.in.utils.enums.ProviderEnum;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class GroqService implements IAClientStrategy {
 
-    @Autowired
-    private GroqClient groqClient;
+    private static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
 
-    @Autowired
-    private AgentRepository agentRepository;
+    private final GroqClient groqClient;
 
     @Override
-    public ContentDto generate(Step step) {
-        GroqRequest req = new GroqRequest();
-        req.setModel("llama-3.3-70b-versatile");
+    public String generate(Step step) {
+        GroqRequest request = buildRequest(step.getPrompt());
+        GroqResponse response = groqClient.sendPrompt(request, step.getAgent().getSecret());
+        return extractResponseText(response);
+    }
 
-        Message msg = new Message();
-        msg.setRole("user");
-        msg.setContent("Genera un dato real verificable...");
-        req.setMessages(List.of(msg));
-        Optional<Agent> agent = agentRepository.findById(Long.valueOf(ProviderEnum.GEMINI.getId()));
+    private GroqRequest buildRequest(String prompt) {
+        Message message = new Message();
+        message.setRole("user");
+        message.setContent(prompt);
 
-        var res = groqClient.sendPrompt(req,agent.get().getSecret());
+        GroqRequest request = new GroqRequest();
+        request.setModel(DEFAULT_MODEL);
+        request.setMessages(List.of(message));
+        return request;
+    }
 
-        return ContentDto.builder()
-                .type("IA")
-                .subType("GROQ")
-                .status("initiated")
-                .lastUpdated(LocalDateTime.now())
-                .created(LocalDateTime.now())
-                .build();
+    private String extractResponseText(GroqResponse response) {
+        if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
+            return "";
+        }
+        return response.getChoices().get(0).getMessage().getContent();
     }
 }

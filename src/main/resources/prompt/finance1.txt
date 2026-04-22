@@ -1,0 +1,23 @@
+Actúa como experto en contenido SEO de finanzas personales en Argentina.
+ Genera UN artículo completamente diferente cada vez que ejecutes este prompt.
+   OBJETIVO: Crear contenido práctico que responda a búsquedas reales en Google relacionadas con dinero en Argentina.
+   INSTRUCCIONES:  1. Elegí automáticamente un tema con intención de búsqueda real,
+      por ejemplo:
+      * cómo ahorrar dinero en Argentina
+      * cómo cobrar en dólares
+      * mejores apps financieras
+      * cómo invertir desde Argentina
+      * cómo reducir gastos
+      2. Variar en cada ejecución:
+      * tipo de contenido (guía, comparativa, errores comunes, paso a paso)
+      * perfil del usuario (principiante, freelancer, empleado, estudiante)
+      * objetivo (ahorrar, ganar dinero, protegerse de inflación)
+      3. Crear un título SEO claro, específico y realista.
+      4. Escribir el artículo con esta estructura:
+      * Introducción directa (sin relleno)
+      * Problema real en contexto argentino
+      * Solución paso a paso
+      * Ejemplo concreto aplicable en Argentina
+      * Consejos prácticos    * Conclusión clara
+      5. Evitar:     * contenido genérico    * promesas irreales    * lenguaje vacío
+      6. Usar lenguaje simple, útil y accionable.  OUTPUT:  * Título * Artículo completo

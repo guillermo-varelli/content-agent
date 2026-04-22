@@ -1,87 +1,51 @@
 package com.n.in.scheduler;
 
-import com.n.in.model.Workflow;
-import com.n.in.model.repository.ContentRepository;
 import com.n.in.model.repository.WorkflowRepository;
 import com.n.in.scrape.infobae.InfobaeTecnoService;
 import com.n.in.service.WorkflowExecutionService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class ContentStatusTask {
 
     private static final Logger log = LoggerFactory.getLogger(ContentStatusTask.class);
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final int EXCLUDED_WORKFLOW_ID = 5;
 
-    @Autowired
-    WorkflowExecutionService workflowExecutionService;
+    private final WorkflowExecutionService workflowExecutionService;
+    private final WorkflowRepository workflowRepository;
 
     @Autowired
     InfobaeTecnoService infobaeTecnoService;
 
-    @Autowired
-    ContentRepository contentRepository;
-
-    @Autowired
-    WorkflowRepository workflowRepository;
-
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-
-   @Scheduled(fixedDelay = 1000)
-    public void createContentWithAIHumanHacks() throws Exception {
-        List<Integer> ENABLED_WORKFLOW = workflowRepository.findIdsByEnabledTrue();
-        for (Integer workflowId : ENABLED_WORKFLOW) {
-            if (ENABLED_WORKFLOW.equals(5)){
-                break;
+    @Scheduled(fixedDelay = 1000)
+    public void executeEnabledWorkflows() {
+        List<Integer> enabledWorkflowIds = workflowRepository.findIdsByEnabledTrue();
+        for (Integer workflowId : enabledWorkflowIds) {
+            if (workflowId.equals(EXCLUDED_WORKFLOW_ID)) {
+                continue;
             }
             workflowExecutionService.executeWorkflow(workflowId, null);
         }
-        log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
+        log.info("Workflows executed at {}", LocalTime.now().format(TIME_FORMATTER));
     }
 
-  /*  @Scheduled(fixedRate = 1000)
+    @Scheduled(fixedRate = 1000)
     public void createContentScrapedInfobaeTech() throws Exception {
         infobaeTecnoService.scrapeTecno().forEach(item ->
                 workflowExecutionService.executeWorkflow(5, item)
         );
 
-        log.info("Content created at {}", dateFormat.format(System.currentTimeMillis()));
-    }*/
-
-    /*
-    @Scheduled(fixedRate = 1000)
-    public void processInitiatedNs() {
-        this.nRepository.findByStatusAndImageUrlIsNull("initiated").stream().forEach((entity) -> {
-            UnsplashSearchResponse response = null;
-
-            try {
-                response = this.unsplashClient.searchPhotos(entity.getImagePrompt(),"3raBUTruWk_fZV9GzBh9qgjk3xlzS-RJWE-e8IYeZZQ");
-            } catch (Exception var4) {
-                throw new RuntimeException(var4);
-            }
-
-            Optional.ofNullable(response.getResults()).filter((results) -> {
-                return !results.isEmpty();
-            }).map((results) -> {
-                return ((UnsplashPhoto)results.get(0)).getUrls().getRegular();
-            }).ifPresentOrElse((imageUrl) -> {
-                ImageDownloader.downloadImageToTmp(imageUrl, entity.getId() + ".jpg");
-                log.info("Image downloaded for entity {} from URL {}", entity.getId(), imageUrl);
-                entity.setImageUrl(imageUrl);
-                entity.setStatus("pending");
-                this.nRepository.save(entity);
-            }, () -> {
-                log.info("No images found for entity {}", entity.getId());
-            });
-        });
+        log.info("Content created from infobae {}", LocalTime.now().format(TIME_FORMATTER));
     }
-
-     */
 }

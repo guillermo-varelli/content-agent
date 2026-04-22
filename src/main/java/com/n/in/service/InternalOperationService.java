@@ -5,38 +5,28 @@ import com.n.in.model.dto.ContentDto;
 import com.n.in.model.mapper.NMapper;
 import com.n.in.model.repository.ContentRepository;
 import com.n.in.utils.ContentParser;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Component
+@RequiredArgsConstructor
 public class InternalOperationService {
-    @Autowired
-    private ContentRepository contentRepository;
 
-    @Autowired
-    private NMapper nMapper;
+    private final ContentRepository contentRepository;
+    private final NMapper nMapper;
 
-    public Object handleInternal(Long execution, Step step, String previousOutput)  {
+    public String saveContentFromStepOutput(Long executionId, Step step, String previousOutput) {
         ContentDto contentDto = new ContentDto();
-
         ContentParser.parse(previousOutput, contentDto);
-        contentDto.setExecutionId(execution);
+        contentDto.setExecutionId(executionId);
         contentDto.setCreated(LocalDateTime.now());
         contentDto.setLastUpdated(LocalDateTime.now());
-        contentDto.setCategory(step.getWorkflows().getCategory());
-        contentDto.setSubCategory(step.getWorkflows().getSubCategory());
+        contentDto.setCategory(step.getWorkflow().getCategory());
+        contentDto.setSubCategory(step.getWorkflow().getSubCategory());
         contentRepository.save(nMapper.toEntity(contentDto));
 
-        return Map.of(
-                "step_prompt", step.getPrompt(),
-                "previous_output", previousOutput,
-                "combined", step.getPrompt() + " | " + previousOutput,
-                "result", "Stored"
-        );
+        return previousOutput;
     }
 }
-
-

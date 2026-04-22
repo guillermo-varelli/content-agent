@@ -19,7 +19,7 @@ public class Workflow {
 
     private String name;
 
-    @OneToMany(mappedBy = "workflows", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "workflow", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Step> steps;
 
     private String category;

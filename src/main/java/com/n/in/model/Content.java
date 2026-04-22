@@ -36,9 +36,6 @@ public class Content {
     private String status;
 
     @Column(length = 20)
-    private String type;
-
-    @Column(length = 20)
     private String category;
 
     @Column(name = "sub_category", length = 20)

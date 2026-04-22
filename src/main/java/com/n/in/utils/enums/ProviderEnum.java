@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum ProviderEnum {
 
     GEMINI(1, "GEMINI"),
-    GROQ(2, "CROQ"),
+    GROQ(2, "GROQ"),
     UNPLASH(3, "UNPLASH");
 
     private final int id;

@@ -1,6 +1,5 @@
 package com.n.in.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.n.in.model.Execution;
 import com.n.in.model.Step;
 import com.n.in.model.StepExecution;
@@ -8,7 +7,9 @@ import com.n.in.model.Workflow;
 import com.n.in.model.repository.ExecutionRepository;
 import com.n.in.model.repository.StepExecutionRepository;
 import com.n.in.model.repository.WorkflowRepository;
-import com.n.in.scrape.infobae.InfobaeTecnoService;
+import com.n.in.exception.StepExecutionException;
+import com.n.in.exception.WorkflowNotFoundException;
+import com.n.in.utils.Constants;
 import com.n.in.utils.enums.StatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,6 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
-import static java.util.Objects.nonNull;
-
 @Service
 @RequiredArgsConstructor
 public class WorkflowExecutionService {
@@ -27,95 +26,103 @@ public class WorkflowExecutionService {
     private final WorkflowRepository workflowRepository;
     private final ExecutionRepository executionRepository;
     private final StepExecutionRepository stepExecutionRepository;
-
     private final IAClientFactory clientFactory;
-
     private final InternalOperationService internalOperationService;
 
-    private final InfobaeTecnoService infobaeScraperService;
-
     @Transactional
-    public void executeWorkflow(Integer workflowId,String output) {
-
+    public void executeWorkflow(Integer workflowId, String initialOutput) {
         Workflow workflow = workflowRepository.findById(workflowId)
-                .orElseThrow(() -> new RuntimeException("Workflow no encontrado"));
+                .orElseThrow(() -> new WorkflowNotFoundException(workflowId));
 
-        Execution execution = new Execution();
-        execution.setWorkflow(workflow);
-        execution.setStatus("RUNNING");
-        execution = executionRepository.save(execution);
+        Execution execution = createRunningExecution(workflow);
 
-        for (Step step : workflow.getSteps().stream()
-                .sorted(Comparator.comparing(Step::getOrderIndex))
-                .toList()) {
-
-            StepExecution stepExec = new StepExecution();
-            stepExec.setExecution(execution);
-            stepExec.setStep(step);
-            stepExec.setStatus("RUNNING");
-            stepExec.setCreatedAt(LocalDateTime.now());
-            stepExec.setUpdatedAt(LocalDateTime.now());
-            stepExec = stepExecutionRepository.save(stepExec);
+        String currentOutput = initialOutput;
+        for (Step step : sortedSteps(workflow)) {
+            StepExecution stepExecution = createRunningStepExecution(execution, step);
 
             try {
-                String updatedOutput = runStep(stepExec.getExecution().getId(),step, output);
-                stepExec.setOutput(updatedOutput);
-                output = updatedOutput;
-                stepExec.setCreatedAt(LocalDateTime.now());
+                currentOutput = runStep(execution.getId(), step, currentOutput);
+                stepExecution.setOutput(currentOutput);
+                stepExecution.setStatus(StatusEnum.DONE.getDescription());
+                stepExecution.setUpdatedAt(LocalDateTime.now());
+                stepExecutionRepository.save(stepExecution);
 
-                if(stepExec.getStatus().equalsIgnoreCase(StatusEnum.ERROR.getDescription())){
-                    execution.setStatus(StatusEnum.ERROR.getDescription());
-                    stepExec.setUpdatedAt(LocalDateTime.now());
-                    executionRepository.save(execution);
-                    return;
-                }else{
-                    stepExec.setStatus(StatusEnum.DONE.getDescription());
-                    stepExecutionRepository.save(stepExec);
-                    execution.setCreatedAt(LocalDateTime.now());
-                    execution.setUpdatedAt(LocalDateTime.now());
-                    execution.setStatus(StatusEnum.DONE.getDescription());
-                    executionRepository.save(execution);
-                }
+                execution.setStatus(StatusEnum.DONE.getDescription());
+                execution.setUpdatedAt(LocalDateTime.now());
+                executionRepository.save(execution);
 
-            } catch (Exception e) {
-                stepExec.setOutput("ERROR: " + e.getMessage());
-                stepExec.setStatus("ERROR");
-                execution.setStatus(StatusEnum.MANUAL_REVIEW.getDescription());
-                stepExec.setUpdatedAt(LocalDateTime.now());
+            } catch (StepExecutionException e) {
+                stepExecution.setOutput("ERROR: " + e.getMessage());
+                stepExecution.setStatus(StatusEnum.ERROR.getDescription());
+                stepExecution.setUpdatedAt(LocalDateTime.now());
+                stepExecutionRepository.save(stepExecution);
+
+                execution.setStatus(StatusEnum.ERROR.getDescription());
+                execution.setUpdatedAt(LocalDateTime.now());
                 executionRepository.save(execution);
                 return;
             }
-
         }
-      return;
     }
 
-    private String runStep(Long execution, Step step, String previousOutput) throws Exception {
+    private Execution createRunningExecution(Workflow workflow) {
+        Execution execution = new Execution();
+        execution.setWorkflow(workflow);
+        execution.setStatus(StatusEnum.RUNNING.getDescription());
+        execution.setCreatedAt(LocalDateTime.now());
+        execution.setUpdatedAt(LocalDateTime.now());
+        return executionRepository.save(execution);
+    }
 
-        String finalPrompt = step.getPrompt();
+    private StepExecution createRunningStepExecution(Execution execution, Step step) {
+        StepExecution stepExecution = new StepExecution();
+        stepExecution.setExecution(execution);
+        stepExecution.setStep(step);
+        stepExecution.setStatus(StatusEnum.RUNNING.getDescription());
+        stepExecution.setCreatedAt(LocalDateTime.now());
+        stepExecution.setUpdatedAt(LocalDateTime.now());
+        return stepExecutionRepository.save(stepExecution);
+    }
 
-        if (previousOutput != null && finalPrompt != null) {
-            finalPrompt = finalPrompt.replace("{{previous_output}}", previousOutput);
+    private List<Step> sortedSteps(Workflow workflow) {
+        return workflow.getSteps().stream()
+                .sorted(Comparator.comparing(Step::getOrderIndex))
+                .toList();
+    }
+
+    private String runStep(Long executionId, Step step, String previousOutput) {
+        String resolvedPrompt = resolvePrompt(step.getPrompt(), previousOutput);
+
+        if (Constants.OPERATION_TYPE_INTERNAL.equalsIgnoreCase(step.getOperationType())) {
+            return internalOperationService.saveContentFromStepOutput(executionId, step, previousOutput);
         }
-
-        if ("internal".equalsIgnoreCase(step.getOperationType())) {
-            return internalOperationService.handleInternal(execution, step, previousOutput).toString();
-        }
-
 
         if (step.getAgent() == null) {
-            throw new IllegalArgumentException("El step requiere un agent para operación: " + step.getOperationType());
+            throw new StepExecutionException(step.getName(), new IllegalArgumentException("Step requires an agent for operation: " + step.getOperationType()));
         }
 
-        Step temp = new Step();
-        temp.setPrompt(finalPrompt);
-        temp.setAgent(step.getAgent());
-        temp.setOperationType(step.getOperationType());
-
+        Step stepWithResolvedPrompt = buildStepWithResolvedPrompt(step, resolvedPrompt);
         IAClientStrategy strategy = clientFactory.getStrategy(step.getAgent());
-
-        Object result = strategy.generate(temp);
-        return result != null ? result.toString() : "";
+        try {
+            String result = strategy.generate(stepWithResolvedPrompt);
+            return result != null ? result : "";
+        } catch (RuntimeException e) {
+            throw new StepExecutionException(step.getName(), e);
+        }
     }
 
+    private String resolvePrompt(String prompt, String previousOutput) {
+        if (prompt != null && previousOutput != null) {
+            return prompt.replace("{{previous_output}}", previousOutput);
+        }
+        return prompt;
+    }
+
+    private Step buildStepWithResolvedPrompt(Step original, String resolvedPrompt) {
+        Step step = new Step();
+        step.setPrompt(resolvedPrompt);
+        step.setAgent(original.getAgent());
+        step.setOperationType(original.getOperationType());
+        return step;
+    }
 }

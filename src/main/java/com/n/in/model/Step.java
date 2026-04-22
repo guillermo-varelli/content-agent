@@ -27,7 +27,7 @@ public class Step {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workflow_id")
-    private Workflow workflows;
+    private Workflow workflow;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "agent_id")

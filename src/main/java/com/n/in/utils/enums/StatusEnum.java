@@ -10,9 +10,9 @@ public enum StatusEnum {
     PENDING(1, "PENDING"),
     DONE(2, "DONE"),
     REJECTED(3, "REJECTED"),
-
     ERROR(4, "ERROR"),
-    MANUAL_REVIEW(3, "MANUAL REVIEW");
+    MANUAL_REVIEW(5, "MANUAL REVIEW"),
+    RUNNING(6, "RUNNING");
 
 
     private final int id;

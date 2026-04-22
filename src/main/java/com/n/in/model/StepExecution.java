@@ -33,10 +33,10 @@ public class StepExecution {
     @Column(columnDefinition = "LONGTEXT")
     private String output;
 
-    @JoinColumn(name = "created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @JoinColumn(name = "updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
 }
